@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcademiaPro - Student Academic Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fef2f2',
+                            100: '#ffe1e1',
+                            500: '#E53935',
+                            600: '#D32F2F',
+                            700: '#C62828',
+                            800: '#B71C1C',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E53935;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #B71C1C;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .dark .glass-card {
+            background: rgba(31, 41, 55, 0.95);
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; color: black; }
+        }
+    </style>
+</head>
+<body class="bg-[#F5F6FA] dark:bg-gray-900 text-[#252525] dark:text-gray-100 font-sans transition-colors duration-200 min-h-screen flex flex-col">
+
+    <!-- LOGIN SCREEN OVERLAY -->
+    <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/80 backdrop-blur-md p-4 transition-all duration-300">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-brand-100 dark:border-gray-700">
+            <div class="bg-gradient-to-r from-brand-600 to-brand-500 p-6 text-center text-white relative">
+                <div class="w-16 h-16 bg-white text-brand-500 rounded-full flex items-center justify-center text-3xl font-extrabold mx-auto shadow-lg mb-3">
+                    <i class="fa-solid font-bold fa-graduation-cap"></i>
+                </div>
+                <h2 class="text-2xl font-bold tracking-tight">AcademiaPro Portal</h2>
+                <p class="text-brand-100 text-xs mt-1">Student Academic Management System</p>
+            </div>
+            <form id="loginForm" class="p-6 space-y-4" onsubmit="handleLogin(event)">
+                <div class="bg-brand-50 dark:bg-gray-700 p-3 rounded-lg border border-brand-200 dark:border-gray-600 text-xs text-brand-800 dark:text-gray-200">
+                    <p class="font-semibold mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Demo Credentials:</p>
+                    <p>Student ID: <code class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded font-mono">STU2026-9812</code></p>
+                    <p>Password: <code class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded font-mono">demo1234</code></p>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1">Student ID</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-id-card absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="loginStudentId" value="STU2026-9812" required class="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-gray-800 transition">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-3 text-gray-400"></i>
+                        <input type="password" id="loginPassword" value="demo1234" required class="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-gray-800 transition">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+                            <i id="passToggleIcon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <label class="flex items-center space-x-2 text-gray-600 dark:text-gray-400 cursor-pointer">
+                        <input type="checkbox" id="rememberMe" checked class="rounded text-brand-500 focus:ring-brand-500">
+                        <span>Remember credentials</span>
+                    </label>
+                    <a href="#" onclick="showToast('Password reset link sent to registered email.', 'info')" class="text-brand-500 hover:underline font-medium">Forgot password?</a>
+                </div>
+                <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 rounded-lg shadow-md transition transform active:scale-95 flex items-center justify-center space-x-2">
+                    <span>Sign In to Dashboard</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN WRAPPER -->
+    <div id="mainWrapper" class="flex-1 flex overflow-hidden">
+        
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="no-print w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 z-30 shrink-0">
+            <!-- Sidebar Header -->
+            <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center font-bold text-xl shrink-0 shadow-md">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div class="font-bold text-lg text-brand-600 dark:text-brand-500 truncate sidebar-text">
+                        Academia<span class="text-gray-800 dark:text-white">Pro</span>
+                    </div>
+                </div>
+                <button onclick="toggleSidebarCollapse()" class="text-gray-400 hover:text-brand-500 focus:outline-none p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i id="collapseIcon" class="fa-solid fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                <a href="#dashboard" onclick="navigateTo('dashboard', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 bg-brand-500 text-white shadow-sm" data-target="dashboard">
+                    <i class="fa-solid fa-chart-pie w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                <a href="#profile" onclick="navigateTo('profile', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-500" data-target="profile">
+                    <i class="fa-solid fa-user w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">My Profile</span>
+                </a>
+                <a href="#results" onclick="navigateTo('results', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-500" data-target="results">
+                    <i class="fa-solid fa-graduation-cap w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Semester Results</span>
+                </a>
+                <a href="#attendance" onclick="navigateTo('attendance', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-500" data-target="attendance">
+                    <i class="fa-solid fa-clipboard-user w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Attendance</span>
+                </a>
+                <a href="#subjects" onclick="navigateTo('subjects', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-500" data-target="subjects">
+                    <i class="fa-solid fa-book-open w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Subjects</span>
+                </a>
+                <a href="#schedule" onclick="navigateTo('schedule', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-500" data-target="schedule">
+                    <i class="fa-solid fa-calendar-days w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Exam Schedule</span>
+                </a>
+                <a href="#announcements" onclick="navigateTo('announcements', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-500 relative" data-target="announcements">
+                    <i class="fa-solid fa-bullhorn w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Announcements</span>
+                    <span id="sidebarAnnouncementBadge" class="ml-auto bg-brand-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">2</span>
+                </a>
+                <a href="#assignments" onclick="navigateTo('assignments', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-500" data-target="assignments">
+                    <i class="fa-solid fa-tasks w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Assignments</span>
+                </a>
+                <a href="#timetable" onclick="navigateTo('timetable', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-500" data-target="timetable">
+                    <i class="fa-solid fa-table-cells w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Timetable</span>
+                </a>
+                <a href="#materials" onclick="navigateTo('materials', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-500" data-target="materials">
+                    <i class="fa-solid fa-folder-open w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Study Materials</span>
+                </a>
+                <a href="#settings" onclick="navigateTo('settings', event)" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 text-gray-600 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-gray-700 hover:text-brand-500" data-target="settings">
+                    <i class="fa-solid fa-gear w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Settings</span>
+                </a>
+            </nav>
+
+            <!-- Logout Link -->
+            <div class="p-3 border-t border-gray-100 dark:border-gray-700">
+                <button onclick="confirmLogout()" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm text-red-600 hover:bg-red-50 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fa-solid fa-right-from-bracket w-5 text-center text-lg"></i>
+                    <span class="sidebar-text">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- CONTENT AREA -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            
+            <!-- TOP NAVBAR -->
+            <header class="no-print bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3 px-6 flex items-center justify-between shrink-0 sticky top-0 z-20">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleMobileMenu()" class="lg:hidden text-gray-600 dark:text-gray-300 hover:text-brand-500 focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                    <!-- Global Search Bar -->
+                    <div class="relative w-48 sm:w-64 md:w-80">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm"></i>
+                        <input type="text" id="globalSearchInput" onkeyup="handleGlobalSearch(event)" placeholder="Search subjects, notices, exams..." class="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-xs sm:text-sm bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-gray-800 transition">
+                        <div id="searchResultsDropdown" class="hidden absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto"></div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    <!-- Dark Mode Toggle -->
+                    <button onclick="toggleDarkMode()" class="p-2 text-gray-500 dark:text-gray-300 hover:text-brand-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors" title="Toggle Theme">
+                        <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+                    </button>
+
+                    <!-- Notifications Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleNotificationsMenu()" class="p-2 text-gray-500 dark:text-gray-300 hover:text-brand-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors relative">
+                            <i class="fa-solid fa-bell text-lg"></i>
+                            <span id="unreadBadge" class="absolute top-1 right-1 w-4 h-4 bg-brand-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">2</span>
+                        </button>
+                        <div id="notificationsDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 z-50">
+                            <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                <h4 class="font-bold text-sm">Notifications</h4>
+                                <button onclick="markAllNotificationsRead()" class="text-xs text-brand-500 hover:underline">Mark all read</button>
+                            </div>
+                            <div id="notificationsList" class="max-h-60 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+                                <!-- Dynamic notifications insertion -->
+                            </div>
+                            <div class="px-4 py-2 border-t border-gray-100 dark:border-gray-700 text-center">
+                                <a href="#announcements" onclick="navigateTo('announcements', event)" class="text-xs text-brand-500 font-semibold hover:underline">View all announcements</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleProfileMenu()" class="flex items-center space-x-3 focus:outline-none p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                            <img id="navProfileImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Student Profile" class="w-9 h-9 rounded-full object-cover border-2 border-brand-500">
+                            <div class="hidden md:block text-left">
+                                <div id="navStudentName" class="text-sm font-bold leading-tight">Alex Johnson</div>
+                                <div id="navStudentDept" class="text-xs text-gray-500 dark:text-gray-400">B.Tech CSE - Sem 5</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
+                        </button>
+                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
+                            <a href="#profile" onclick="navigateTo('profile', event)" class="flex items-center space-x-2 px-4 py-2 text-sm hover:bg-brand-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
+                                <i class="fa-solid fa-id-card w-4 text-brand-500"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="#settings" onclick="navigateTo('settings', event)" class="flex items-center space-x-2 px-4 py-2 text-sm hover:bg-brand-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
+                                <i class="fa-solid fa-sliders w-4 text-brand-500"></i>
+                                <span>Settings</span>
+                            </a>
+                            <hr class="my-1 border-gray-100 dark:border-gray-700">
+                            <button onclick="confirmLogout()" class="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-gray-700">
+                                <i class="fa-solid fa-power-off w-4"></i>
+                                <span>Sign Out</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- MAIN DYNAMIC SECTIONS CONTAINER -->
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+
+                <!-- SECTION 1: DASHBOARD OVERVIEW -->
+                <section id="dashboardSection" class="space-y-6">
+                    <!-- Dynamic Welcome Banner -->
+                    <div class="bg-gradient-to-r from-brand-600 to-brand-500 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center relative overflow-hidden">
+                        <div class="z-10 space-y-2 text-center md:text-left">
+                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md uppercase tracking-wider">Academic Year 2026-2027</span>
+                            <h1 class="text-2xl sm:text-3xl font-extrabold">Welcome back, <span id="dashWelcomeName">Alex</span>! 👋</h1>
+                            <p class="text-brand-100 text-sm max-w-xl">You have 2 pending assignments and 1 upcoming exam this week. Keep up the good work!</p>
+                        </div>
+                        <div class="mt-4 md:mt-0 flex space-x-3 z-10">
+                            <button onclick="navigateTo('schedule', event)" class="bg-white text-brand-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-brand-50 transition shadow">
+                                <i class="fa-solid fa-calendar-check mr-1.5"></i> Exam Schedule
+                            </button>
+                            <button onclick="navigateTo('assignments', event)" class="bg-brand-700 text-white border border-white/20 px-4 py-2 rounded-xl font-bold text-sm hover:bg-brand-800 transition shadow">
+                                <i class="fa-solid fa-upload mr-1.5"></i> Submit Work
+                            </button>
+                        </div>
+                        <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    </div>
+
+                    <!-- 4 Summary Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Student Details -->
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <p class="text-xs uppercase font-bold text-gray-400">Student Profile</p>
+                                    <h3 id="cardStudentName" class="font-bold text-base mt-1 text-gray-800 dark:text-white truncate">Alex Johnson</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-500 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-id-card-clip text-lg"></i>
+                                </div>
+                            </div>
+                            <div class="space-y-1 text-xs text-gray-600 dark:text-gray-300">
+                                <p><span class="font-semibold text-gray-400">ID:</span> <span id="cardStudentId" class="font-mono">STU2026-9812</span></p>
+                                <p><span class="font-semibold text-gray-400">Branch:</span> <span id="cardStudentBranch">CSE (AI & ML)</span></p>
+                                <p><span class="font-semibold text-gray-400">Semester:</span> <span id="cardStudentSem">Semester 5</span></p>
+                            </div>
+                        </div>
+
+                        <!-- CGPA Indicator -->
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs uppercase font-bold text-gray-400">Current CGPA</p>
+                                    <h3 id="cardCgpaVal" class="text-3xl font-extrabold mt-1 text-brand-600 dark:text-brand-500">8.82</h3>
+                                    <p class="text-xs text-emerald-600 font-semibold mt-1"><i class="fa-solid fa-arrow-trend-up mr-1"></i> Top 5% of Class</p>
+                                </div>
+                                <div class="relative w-16 h-16 flex items-center justify-center">
+                                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                        <path class="text-gray-100 dark:text-gray-700 stroke-current" stroke-width="3.5" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                        <path class="text-brand-500 stroke-current" stroke-dasharray="88, 100" stroke-width="3.5" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                    </svg>
+                                    <span class="absolute text-xs font-bold">88%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Attendance Summary -->
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <p class="text-xs uppercase font-bold text-gray-400">Overall Attendance</p>
+                                    <h3 id="cardAttendanceVal" class="text-3xl font-extrabold mt-1 text-gray-800 dark:text-white">87.5%</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-user-check text-lg"></i>
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5 mt-2 overflow-hidden">
+                                <div id="cardAttendanceBar" class="bg-brand-500 h-2.5 rounded-full transition-all duration-500" style="width: 87.5%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">Required threshold: 75%</p>
+                        </div>
+
+                        <!-- Pending Assignments -->
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-xs uppercase font-bold text-gray-400">Pending Homework</p>
+                                    <h3 id="cardPendingAssignmentsVal" class="text-3xl font-extrabold mt-1 text-brand-600">2 Tasks</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-500 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+                                </div>
+                            </div>
+                            <button onclick="navigateTo('assignments', event)" class="mt-3 w-full bg-brand-50 dark:bg-gray-700 hover:bg-brand-100 dark:hover:bg-gray-600 text-brand-600 dark:text-brand-400 font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center justify-center space-x-1">
+                                <span>Review Submissions</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Charts Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- CGPA Trend Chart -->
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-bold text-base flex items-center space-x-2">
+                                    <i class="fa-solid fa-chart-line text-brand-500"></i>
+                                    <span>Semester Progress (GPA Trend)</span>
+                                </h3>
+                                <span class="text-xs bg-brand-50 text-brand-600 font-semibold px-2.5 py-1 rounded-md">Sem 1 - Sem 5</span>
+                            </div>
+                            <div class="h-64 relative">
+                                <canvas id="gpaChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Subject Attendance Comparison -->
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-bold text-base flex items-center space-x-2">
+                                    <i class="fa-solid fa-chart-bar text-brand-500"></i>
+                                    <span>Subject-wise Attendance %</span>
+                                </h3>
+                                <button onclick="navigateTo('attendance', event)" class="text-xs text-brand-500 hover:underline font-semibold">Full Breakdown</button>
+                            </div>
+                            <div class="h-64 relative">
+                                <canvas id="attendanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Announcement Banner -->
+                    <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-500 flex items-center justify-center text-xl shrink-0">
+                                <i class="fa-solid fa-bell font-bold"></i>
+                            </div>
+                            <div>
+                                <span class="bg-brand-100 text-brand-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Urgent Notice</span>
+                                <h4 id="dashNoticeTitle" class="font-bold text-sm mt-0.5">Mid-Semester Examination Time Table Released</h4>
+                                <p id="dashNoticeDesc" class="text-xs text-gray-500 dark:text-gray-400">Mid-Sem exams commence on Nov 10, 2026. Download the verified schedule now.</p>
+                            </div>
+                        </div>
+                        <button onclick="navigateTo('schedule', event)" class="shrink-0 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow transition">
+                            View Schedule
+                        </button>
+                    </div>
+                </section>
+
+                <!-- SECTION 2: MY PROFILE -->
+                <section id="profileSection" class="hidden space-y-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                        <div class="h-32 bg-gradient-to-r from-brand-600 to-brand-500 relative">
+                            <button onclick="document.getElementById('profilePicInput').click()" class="absolute right-4 bottom-4 bg-white/80 hover:bg-white text-gray-800 px-3 py-1.5 rounded-lg text-xs font-bold shadow backdrop-blur-md transition">
+                                <i class="fa-solid fa-camera mr-1"></i> Change Cover
+                            </button>
+                        </div>
+                        <div class="px-6 pb-6 relative flex flex-col sm:flex-row items-center sm:items-end justify-between border-b border-gray-100 dark:border-gray-700 gap-4">
+                            <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-5 -mt-12 sm:-mt-10">
+                                <div class="relative group">
+                                    <img id="profileDetailImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-4 border-white dark:border-gray-800 shadow-lg">
+                                    <button onclick="document.getElementById('profilePicInput').click()" class="absolute inset-0 bg-black/40 rounded-2xl text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <input type="file" id="profilePicInput" accept="image/*" class="hidden" onchange="handleProfilePicUpload(event)">
+                                </div>
+                                <div class="text-center sm:text-left">
+                                    <h2 id="profileNameDisplay" class="text-2xl font-extrabold text-gray-800 dark:text-white">Alex Johnson</h2>
+                                    <p id="profileRollDisplay" class="text-xs text-brand-600 dark:text-brand-400 font-mono font-semibold">STU2026-9812</p>
+                                    <p class="text-xs text-gray-500 mt-1">Bachelor of Technology - Computer Science & Engineering</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="editProfileBtn" onclick="toggleEditProfile(true)" class="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow transition">
+                                    <i class="fa-solid fa-user-pen mr-1"></i> Edit Profile
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Profile Form -->
+                        <form id="profileForm" onsubmit="saveProfileChanges(event)" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+                            <div>
+                                <label class="block font-semibold text-gray-600 dark:text-gray-400 mb-1">Full Name</label>
+                                <input type="text" id="profInputName" disabled value="Alex Johnson" class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 disabled:opacity-70 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-gray-600 dark:text-gray-400 mb-1">Roll / Student ID</label>
+                                <input type="text" id="profInputRoll" disabled value="STU2026-9812" class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 disabled:opacity-70 font-mono">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-gray-600 dark:text-gray-400 mb-1">Email Address</label>
+                                <input type="email" id="profInputEmail" disabled value="alex.johnson@university.edu" class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 disabled:opacity-70 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-gray-600 dark:text-gray-400 mb-1">Phone Number</label>
+                                <input type="text" id="profInputPhone" disabled value="+1 (555) 019-2834" class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 disabled:opacity-70 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-gray-600 dark:text-gray-400 mb-1">Department / Branch</label>
+                                <input type="text" id="profInputDept" disabled value="CSE (AI & ML)" class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 disabled:opacity-70 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-gray-600 dark:text-gray-400 mb-1">Current Semester</label>
+                                <select id="profInputSem" disabled class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 disabled:opacity-70 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                    <option value="Semester 5" selected>Semester 5</option>
+                                    <option value="Semester 6">Semester 6</option>
+                                </select>
+                            </div>
+
+                            <div id="profileActionBtns" class="hidden md:col-span-2 flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <button type="button" onclick="toggleEditProfile(false)" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-800 dark:text-white px-4 py-2 rounded-xl font-bold transition">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-5 py-2 rounded-xl shadow transition">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- SECTION 3: SEMESTER RESULTS -->
+                <section id="resultsSection" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-gray-800 dark:text-white">Semester Academic Results</h2>
+                            <p class="text-xs text-gray-500">Official verified grades and score statements</p>
+                        </div>
+                        <div class="flex items-center space-x-3 w-full sm:w-auto">
+                            <select id="resultsSemSelect" onchange="filterResultsBySemester()" class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="5">Semester 5 (Current)</option>
+                                <option value="4">Semester 4</option>
+                                <option value="3">Semester 3</option>
+                            </select>
+                            <button onclick="window.print()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-xl text-xs font-bold transition">
+                                <i class="fa-solid fa-print mr-1"></i> Print
+                            </button>
+                            <button onclick="downloadResultsCSV()" class="bg-brand-500 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow">
+                                <i class="fa-solid fa-download mr-1"></i> Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Results Table -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-brand-500 text-white uppercase text-[11px] font-bold tracking-wider">
+                                    <tr>
+                                        <th class="p-3.5">Code</th>
+                                        <th class="p-3.5">Subject Name</th>
+                                        <th class="p-3.5 text-center">Internal (40)</th>
+                                        <th class="p-3.5 text-center">External (60)</th>
+                                        <th class="p-3.5 text-center">Total (100)</th>
+                                        <th class="p-3.5 text-center">Grade</th>
+                                        <th class="p-3.5 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsTableBody" class="divide-y divide-gray-100 dark:divide-gray-700">
+                                    <!-- Inserted dynamically via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700/50 p-4 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center text-xs space-y-2 sm:space-y-0 font-bold">
+                            <div class="flex space-x-4">
+                                <span>Total Credits: <strong class="text-brand-600 dark:text-brand-400">22</strong></span>
+                                <span>SGPA: <strong id="semSgpaVal" class="text-brand-600 dark:text-brand-400">8.90</strong></span>
+                            </div>
+                            <div class="text-emerald-600 flex items-center space-x-1">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Overall Result: PASS WITH DISTINCTION</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 4: ATTENDANCE -->
+                <section id="attendanceSection" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-gray-800 dark:text-white">Attendance Tracking</h2>
+                            <p class="text-xs text-gray-500">Subject-wise attendance log & criteria alerts</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button onclick="downloadAttendanceReport()" class="bg-brand-500 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow">
+                                <i class="fa-solid fa-file-pdf mr-1"></i> Download Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Cards Table -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-gray-50 dark:bg-gray-700 uppercase text-[11px] font-bold text-gray-500 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700">
+                                    <tr>
+                                        <th class="p-3.5">Subject</th>
+                                        <th class="p-3.5 text-center">Conducted</th>
+                                        <th class="p-3.5 text-center">Attended</th>
+                                        <th class="p-3.5 text-center">Missed</th>
+                                        <th class="p-3.5 text-center">Percentage</th>
+                                        <th class="p-3.5">Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendanceTableBody" class="divide-y divide-gray-100 dark:divide-gray-700">
+                                    <!-- Dynamic rows from JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 5: SUBJECTS -->
+                <section id="subjectsSection" class="hidden space-y-6">
+                    <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-gray-800 dark:text-white">Enrolled Subjects</h2>
+                            <p class="text-xs text-gray-500">Current semester courses and assigned faculty</p>
+                        </div>
+                    </div>
+                    <div id="subjectCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Dynamic subject cards -->
+                    </div>
+                </section>
+
+                <!-- SECTION 6: EXAMINATION SCHEDULE -->
+                <section id="scheduleSection" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-gray-800 dark:text-white">Examination Timetable</h2>
+                            <p class="text-xs text-gray-500">Upcoming Mid-Sem & End-Sem examination dates</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="window.print()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-xl text-xs font-bold transition">
+                                <i class="fa-solid fa-print mr-1"></i> Print
+                            </button>
+                            <button onclick="downloadExamScheduleCSV()" class="bg-brand-500 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow">
+                                <i class="fa-solid fa-download mr-1"></i> Download
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Countdown Banner -->
+                    <div class="bg-gradient-to-r from-brand-600 to-brand-500 p-5 rounded-2xl text-white shadow-lg flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-stopwatch text-3xl"></i>
+                            <div>
+                                <h4 class="font-bold text-sm">Next Exam: Artificial Intelligence</h4>
+                                <p class="text-xs text-brand-100">Date: Nov 10, 2026 • Room 302</p>
+                            </div>
+                        </div>
+                        <div id="examCountdownDisplay" class="flex space-x-2 text-center font-mono">
+                            <div class="bg-white/20 px-3 py-1.5 rounded-lg">
+                                <span id="countDays" class="text-lg font-bold">15</span>
+                                <span class="block text-[10px] uppercase">Days</span>
+                            </div>
+                            <div class="bg-white/20 px-3 py-1.5 rounded-lg">
+                                <span id="countHours" class="text-lg font-bold">08</span>
+                                <span class="block text-[10px] uppercase">Hrs</span>
+                            </div>
+                            <div class="bg-white/20 px-3 py-1.5 rounded-lg">
+                                <span id="countMins" class="text-lg font-bold">42</span>
+                                <span class="block text-[10px] uppercase">Min</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Schedule List -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                        <div id="examScheduleList" class="divide-y divide-gray-100 dark:divide-gray-700">
+                            <!-- JS dynamic insertion -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 7: ANNOUNCEMENTS -->
+                <section id="announcementsSection" class="hidden space-y-6">
+                    <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-gray-800 dark:text-white">Campus Announcements</h2>
+                            <p class="text-xs text-gray-500">Official circulars, events and deadlines</p>
+                        </div>
+                        <button onclick="markAllNotificationsRead()" class="text-xs text-brand-500 hover:underline font-bold">
+                            Mark All as Read
+                        </button>
+                    </div>
+
+                    <div id="announcementsGrid" class="space-y-4">
+                        <!-- Dynamic notices -->
+                    </div>
+                </section>
+
+                <!-- SECTION 8: ASSIGNMENTS -->
+                <section id="assignmentsSection" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-gray-800 dark:text-white">Assignments Portal</h2>
+                            <p class="text-xs text-gray-500">Track deadlines, grade feedback and upload homework</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="filterAssignments('all')" class="bg-gray-100 dark:bg-gray-700 hover:bg-brand-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">All</button>
+                            <button onclick="filterAssignments('pending')" class="bg-gray-100 dark:bg-gray-700 hover:bg-brand-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">Pending</button>
+                            <button onclick="filterAssignments('submitted')" class="bg-gray-100 dark:bg-gray-700 hover:bg-brand-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">Submitted</button>
+                        </div>
+                    </div>
+
+                    <!-- Assignments Table -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-gray-50 dark:bg-gray-700 uppercase text-[11px] font-bold text-gray-500 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700">
+                                    <tr>
+                                        <th class="p-3.5">Title</th>
+                                        <th class="p-3.5">Subject</th>
+                                        <th class="p-3.5">Due Date</th>
+                                        <th class="p-3.5 text-center">Status</th>
+                                        <th class="p-3.5 text-center">Grade</th>
+                                        <th class="p-3.5 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assignmentsTableBody" class="divide-y divide-gray-100 dark:divide-gray-700">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 9: TIMETABLE -->
+                <section id="timetableSection" class="hidden space-y-6">
+                    <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-gray-800 dark:text-white">Weekly Class Schedule</h2>
+                            <p class="text-xs text-gray-500">Classroom locations and lecture hours</p>
+                        </div>
+                        <button onclick="window.print()" class="bg-brand-500 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow">
+                            <i class="fa-solid fa-print mr-1"></i> Print Timetable
+                        </button>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-x-auto">
+                        <table class="w-full text-center text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-brand-500 text-white font-bold uppercase text-[11px]">
+                                    <th class="p-3 border border-brand-600">Day / Time</th>
+                                    <th class="p-3 border border-brand-600">09:00 - 10:00 AM</th>
+                                    <th class="p-3 border border-brand-600">10:00 - 11:00 AM</th>
+                                    <th class="p-3 border border-brand-600">11:15 - 12:15 PM</th>
+                                    <th class="p-3 border border-brand-600">12:15 - 01:15 PM</th>
+                                    <th class="p-3 border border-brand-600 bg-gray-700">01:15 - 02:00 PM</th>
+                                    <th class="p-3 border border-brand-600">02:00 - 04:00 PM</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timetableBody" class="divide-y divide-gray-100 dark:divide-gray-700">
+                                <!-- Dynamic timetable grid generated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- SECTION 10: STUDY MATERIALS -->
+                <section id="materialsSection" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-gray-800 dark:text-white">Study Materials & Notes</h2>
+                            <p class="text-xs text-gray-500">Download lecture slides, previous papers, and lab manuals</p>
+                        </div>
+                        <div class="relative w-full sm:w-64">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                            <input type="text" id="materialsSearch" onkeyup="filterMaterials()" placeholder="Search files..." class="w-full pl-8 pr-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-xl text-xs bg-gray-50 dark:bg-gray-700 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div id="materialsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Dynamic study resources -->
+                    </div>
+                </section>
+
+                <!-- SECTION 11: SETTINGS -->
+                <section id="settingsSection" class="hidden space-y-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm max-w-3xl space-y-6">
+                        <h2 class="text-xl font-extrabold text-gray-800 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-3">Account & Preferences</h2>
+
+                        <!-- Notification Settings -->
+                        <div class="space-y-3">
+                            <h4 class="font-bold text-sm text-brand-600">Notification Preferences</h4>
+                            <label class="flex items-center justify-between text-xs cursor-pointer">
+                                <span>Email alerts for upcoming assignment deadlines</span>
+                                <input type="checkbox" id="setOptEmail" checked onchange="savePreferences()" class="rounded text-brand-500 focus:ring-brand-500 w-4 h-4">
+                            </label>
+                            <label class="flex items-center justify-between text-xs cursor-pointer">
+                                <span>SMS notification for exam schedule updates</span>
+                                <input type="checkbox" id="setOptSms" checked onchange="savePreferences()" class="rounded text-brand-500 focus:ring-brand-500 w-4 h-4">
+                            </label>
+                        </div>
+
+                        <!-- Password Reset Mock -->
+                        <div class="space-y-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <h4 class="font-bold text-sm text-brand-600">Security Settings</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <label class="block mb-1 text-gray-500">Current Password</label>
+                                    <input type="password" id="currPassInput" placeholder="••••••••" class="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700">
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-gray-500">New Password</label>
+                                    <input type="password" id="newPassInput" placeholder="••••••••" class="w-full p-2 border border-gray-200 dark:border-gray-600 rounded-xl dark:bg-gray-700">
+                                </div>
+                            </div>
+                            <button onclick="handleChangePassword()" class="bg-gray-800 dark:bg-gray-700 hover:bg-black text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                                Update Password
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- REUSABLE MODAL -->
+    <div id="generalModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-200 dark:border-gray-700 transform transition-all">
+            <div id="modalHeader" class="bg-brand-500 p-4 text-white flex justify-between items-center">
+                <h3 id="modalTitle" class="font-bold text-base">Modal Title</h3>
+                <button onclick="closeModal()" class="text-white hover:text-gray-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="modalBody" class="p-6 text-xs sm:text-sm space-y-3 text-gray-700 dark:text-gray-300">
+                <!-- Modal Body Content -->
+            </div>
+            <div id="modalFooter" class="p-4 bg-gray-50 dark:bg-gray-700/50 flex justify-end space-x-2 border-t border-gray-100 dark:border-gray-700">
+                <button onclick="closeModal()" class="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 text-gray-800 dark:text-white px-4 py-1.5 rounded-xl text-xs font-bold">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        /* ==========================================================================
+           1. INITIALIZATION & LOCAL STORAGE STATE MANAGEMENT
+           ========================================================================== */
+        const DEFAULT_STUDENT = {
+            id: 'STU2026-9812',
+            name: 'Alex Johnson',
+            email: 'alex.johnson@university.edu',
+            phone: '+1 (555) 019-2834',
+            dept: 'CSE (AI & ML)',
+            sem: 'Semester 5',
+            cgpa: 8.82,
+            attendance: 87.5,
+            pendingAssignments: 2,
+            profilePic: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+        };
+
+        const SUBJECTS_DATA = [
+            { code: 'CS501', name: 'Artificial Intelligence', faculty: 'Dr. Robert Vance', credits: 4, schedule: 'Mon, Wed 09:00 AM', desc: 'Core principles of modern machine learning, search algorithms, and neural networks.' },
+            { code: 'CS502', name: 'Python Programming', faculty: 'Prof. Sarah Jenkins', credits: 4, schedule: 'Tue, Thu 10:00 AM', desc: 'Advanced object-oriented design, web scraping, data science libraries, and API integration.' },
+            { code: 'CS503', name: 'Data Structures & Algo', faculty: 'Dr. Michael Chang', credits: 4, schedule: 'Mon, Fri 11:15 AM', desc: 'Graph algorithms, dynamic programming, space-time complexity, and heap implementations.' },
+            { code: 'CS504', name: 'Database Systems', faculty: 'Prof. Elena Rostova', credits: 3, schedule: 'Wed, Fri 02:00 PM', desc: 'Relational algebra, SQL optimization, ACID compliance, and NoSQL architecture.' },
+            { code: 'CS505', name: 'Computer Fundamentals', faculty: 'Prof. David Miller', credits: 3, schedule: 'Thu 02:00 PM', desc: 'Operating system principles, computer architecture, memory hierarchies, and digital logic.' }
+        ];
+
+        let resultsData = [
+            { code: 'CS501', name: 'Artificial Intelligence', internal: 36, external: 52, total: 88, grade: 'A+', pass: true, sem: '5' },
+            { code: 'CS502', name: 'Python Programming', internal: 38, external: 55, total: 93, grade: 'O', pass: true, sem: '5' },
+            { code: 'CS503', name: 'Data Structures & Algo', internal: 32, external: 48, total: 80, grade: 'A', pass: true, sem: '5' },
+            { code: 'CS504', name: 'Database Systems', internal: 35, external: 50, total: 85, grade: 'A+', pass: true, sem: '5' },
+            { code: 'CS505', name: 'Computer Fundamentals', internal: 30, external: 42, total: 72, grade: 'B+', pass: true, sem: '5' }
+        ];
+
+        let attendanceData = [
+            { code: 'CS501', subject: 'Artificial Intelligence', conducted: 40, attended: 36, missed: 4 },
+            { code: 'CS502', subject: 'Python Programming', conducted: 42, attended: 39, missed: 3 },
+            { code: 'CS503', subject: 'Data Structures', conducted: 38, attended: 31, missed: 7 },
+            { code: 'CS504', subject: 'Database Systems', conducted: 36, attended: 33, missed: 3 },
+            { code: 'CS505', subject: 'Computer Fundamentals', conducted: 30, attended: 24, missed: 6 }
+        ];
+
+        let announcementsData = [
+            { id: 1, title: 'Mid-Semester Examination Time Table Released', date: 'Oct 24, 2026', desc: 'The verified schedule for Mid-Sem exams starting Nov 10, 2026 is published. Check schedule section.', priority: 'High', read: false },
+            { id: 2, title: 'Annual TechFest Registration Open', date: 'Oct 20, 2026', desc: 'Register your projects for Hackathon 2026 before Nov 02. Exciting prizes awaits winners!', priority: 'Medium', read: false },
+            { id: 3, title: 'Library Hours Extended', date: 'Oct 18, 2026', desc: 'Central University Library will remain open till 11:00 PM during exam preparation weeks.', priority: 'Low', read: true }
+        ];
+
+        let assignmentsData = [
+            { id: 101, title: 'Neural Network Implementation', subject: 'Artificial Intelligence', due: 'Nov 02, 2026', status: 'Pending', grade: 'N/A' },
+            { id: 102, title: 'Pandas Data Cleaning Lab', subject: 'Python Programming', due: 'Nov 05, 2026', status: 'Pending', grade: 'N/A' },
+            { id: 103, title: 'B-Tree & AVL Implementation', subject: 'Data Structures', due: 'Oct 15, 2026', status: 'Submitted', grade: '19/20' }
+        ];
+
+        let examScheduleData = [
+            { code: 'CS501', subject: 'Artificial Intelligence', date: 'Nov 10, 2026', day: 'Tuesday', time: '10:00 AM - 01:00 PM', room: 'Hall 302', type: 'Mid-Sem' },
+            { code: 'CS502', subject: 'Python Programming', date: 'Nov 12, 2026', day: 'Thursday', time: '10:00 AM - 01:00 PM', room: 'Lab 101', type: 'Mid-Sem' },
+            { code: 'CS503', subject: 'Data Structures', date: 'Nov 15, 2026', day: 'Sunday', time: '10:00 AM - 01:00 PM', room: 'Hall 304', type: 'Mid-Sem' }
+        ];
+
+        let materialsData = [
+            { id: 1, name: 'AI Search Algorithms Lecture Slides', subject: 'Artificial Intelligence', type: 'PDF', size: '4.2 MB' },
+            { id: 2, name: 'Python OOPS Cheat Sheet & Exercises', subject: 'Python Programming', type: 'Code', size: '1.8 MB' },
+            { id: 3, name: 'Graph Traversal & BFS Practice Set', subject: 'Data Structures', type: 'PDF', size: '2.5 MB' },
+            { id: 4, name: 'Previous Year Mid-Sem Papers (2025)', subject: 'Database Systems', type: 'Exam Paper', size: '5.1 MB' }
+        ];
+
+        // Global Chart Instance Handles
+        let gpaChartInstance = null;
+        let attendanceChartInstance = null;
+
+        // On Page Load Initialization
+        window.addEventListener('load', () => {
+            loadStudentProfile();
+            renderAllSections();
+            initCharts();
+            setupCountdownTimer();
+            checkLoginState();
+        });
+
+        /* ==========================================================================
+           2. AUTHENTICATION & LOGIN FLOW
+           ========================================================================== */
+        function checkLoginState() {
+            const isLoggedIn = localStorage.getItem('academia_is_logged');
+            if (isLoggedIn === 'true') {
+                document.getElementById('loginOverlay').classList.add('hidden');
+            } else {
+                document.getElementById('loginOverlay').classList.remove('hidden');
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const idVal = document.getElementById('loginStudentId').value;
+            const passVal = document.getElementById('loginPassword').value;
+
+            if (idVal && passVal === 'demo1234') {
+                localStorage.setItem('academia_is_logged', 'true');
+                document.getElementById('loginOverlay').classList.add('hidden');
+                showToast('Successfully logged in!', 'success');
+            } else {
+                showToast('Invalid credentials! Use demo password: demo1234', 'error');
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('loginPassword');
+            const icon = document.getElementById('passToggleIcon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passInput.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function confirmLogout() {
+            if (confirm('Are you sure you want to log out of AcademiaPro?')) {
+                localStorage.removeItem('academia_is_logged');
+                document.getElementById('loginOverlay').classList.remove('hidden');
+                showToast('Logged out successfully.', 'info');
+            }
+        }
+
+        /* ==========================================================================
+           3. ROUTING & SECTION NAVIGATION
+           ========================================================================== */
+        function navigateTo(sectionId, event) {
+            if (event) event.preventDefault();
+
+            // Hide all sections
+            const sections = ['dashboard', 'profile', 'results', 'attendance', 'subjects', 'schedule', 'announcements', 'assignments', 'timetable', 'materials', 'settings'];
+            sections.forEach(sec => {
+                const el = document.getElementById(sec + 'Section');
+                if (el) el.classList.add('hidden');
+            });
+
+            // Show selected section
+            const activeEl = document.getElementById(sectionId + 'Section');
+            if (activeEl) activeEl.classList.remove('hidden');
+
+            // Update Sidebar Highlight
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.getAttribute('data-target') === sectionId) {
+                    item.classList.add('bg-brand-500', 'text-white', 'shadow-sm');
+                    item.classList.remove('text-gray-600', 'dark:text-gray-300');
+                } else {
+                    item.classList.remove('bg-brand-500', 'text-white', 'shadow-sm');
+                    item.classList.add('text-gray-600', 'dark:text-gray-300');
+                }
+            });
+
+            // Close mobile menu if open
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        }
+
+        function toggleSidebarCollapse() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('collapseIcon');
+            sidebar.classList.toggle('w-64');
+            sidebar.classList.toggle('w-20');
+            
+            document.querySelectorAll('.sidebar-text').forEach(el => el.classList.toggle('hidden'));
+            icon.classList.toggle('fa-chevron-left');
+            icon.classList.toggle('fa-chevron-right');
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            document.getElementById('themeIcon').className = isDark ? 'fa-solid fa-sun text-lg' : 'fa-solid fa-moon text-lg';
+            localStorage.setItem('academia_theme', isDark ? 'dark' : 'light');
+        }
+
+        /* ==========================================================================
+           4. PROFILE & LOCAL STORAGE UPDATES
+           ========================================================================== */
+        function loadStudentProfile() {
+            const stored = localStorage.getItem('academia_student_data');
+            const student = stored ? JSON.parse(stored) : DEFAULT_STUDENT;
+
+            // Header Elements
+            document.getElementById('navStudentName').innerText = student.name;
+            document.getElementById('navStudentDept').innerText = student.dept + ' - ' + student.sem;
+            document.getElementById('navProfileImg').src = student.profilePic;
+
+            // Dashboard Elements
+            document.getElementById('dashWelcomeName').innerText = student.name.split(' ')[0];
+            document.getElementById('cardStudentName').innerText = student.name;
+            document.getElementById('cardStudentId').innerText = student.id;
+            document.getElementById('cardStudentBranch').innerText = student.dept;
+            document.getElementById('cardStudentSem').innerText = student.sem;
+
+            // Profile Section
+            document.getElementById('profileNameDisplay').innerText = student.name;
+            document.getElementById('profileRollDisplay').innerText = student.id;
+            document.getElementById('profileDetailImg').src = student.profilePic;
+
+            document.getElementById('profInputName').value = student.name;
+            document.getElementById('profInputRoll').value = student.id;
+            document.getElementById('profInputEmail').value = student.email;
+            document.getElementById('profInputPhone').value = student.phone;
+            document.getElementById('profInputDept').value = student.dept;
+            document.getElementById('profInputSem').value = student.sem;
+        }
+
+        function toggleEditProfile(enable) {
+            const inputs = ['profInputName', 'profInputEmail', 'profInputPhone', 'profInputDept', 'profInputSem'];
+            inputs.forEach(id => {
+                document.getElementById(id).disabled = !enable;
+            });
+            document.getElementById('profileActionBtns').classList.toggle('hidden', !enable);
+        }
+
+        function saveProfileChanges(e) {
+            e.preventDefault();
+            const updated = {
+                id: document.getElementById('profInputRoll').value,
+                name: document.getElementById('profInputName').value,
+                email: document.getElementById('profInputEmail').value,
+                phone: document.getElementById('profInputPhone').value,
+                dept: document.getElementById('profInputDept').value,
+                sem: document.getElementById('profInputSem').value,
+                cgpa: DEFAULT_STUDENT.cgpa,
+                attendance: DEFAULT_STUDENT.attendance,
+                pendingAssignments: DEFAULT_STUDENT.pendingAssignments,
+                profilePic: document.getElementById('profileDetailImg').src
+            };
+
+            localStorage.setItem('academia_student_data', JSON.stringify(updated));
+            loadStudentProfile();
+            toggleEditProfile(false);
+            showToast('Profile saved successfully!', 'success');
+        }
+
+        function handleProfilePicUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgUrl = e.target.result;
+                    document.getElementById('profileDetailImg').src = imgUrl;
+                    document.getElementById('navProfileImg').src = imgUrl;
+                    
+                    const stored = localStorage.getItem('academia_student_data');
+                    const student = stored ? JSON.parse(stored) : DEFAULT_STUDENT;
+                    student.profilePic = imgUrl;
+                    localStorage.setItem('academia_student_data', JSON.stringify(student));
+                    showToast('Profile photo updated!', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        /* ==========================================================================
+           5. SECTION RENDERERS (RESULTS, ATTENDANCE, SUBJECTS, ETC.)
+           ========================================================================== */
+        function renderAllSections() {
+            renderResultsTable();
+            renderAttendanceTable();
+            renderSubjectCards();
+            renderExamSchedule();
+            renderAnnouncements();
+            renderAssignmentsTable();
+            renderTimetable();
+            renderStudyMaterials();
+            updateNotificationBadges();
+        }
+
+        // Render Semester Results
+        function renderResultsTable() {
+            const tbody = document.getElementById('resultsTableBody');
+            tbody.innerHTML = '';
+            
+            resultsData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-700/50 transition';
+                tr.innerHTML = `
+                    <td class="p-3.5 font-mono font-bold text-brand-600 dark:text-brand-400">${row.code}</td>
+                    <td class="p-3.5 font-semibold">${row.name}</td>
+                    <td class="p-3.5 text-center">${row.internal}</td>
+                    <td class="p-3.5 text-center">${row.external}</td>
+                    <td class="p-3.5 text-center font-bold">${row.total}</td>
+                    <td class="p-3.5 text-center font-bold text-brand-500">${row.grade}</td>
+                    <td class="p-3.5 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${row.pass ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">
+                            ${row.pass ? 'PASS' : 'FAIL'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Attendance
+        function renderAttendanceTable() {
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = '';
+
+            attendanceData.forEach(item => {
+                const pct = Math.round((item.attended / item.conducted) * 100);
+                let badgeClass = pct >= 85 ? 'bg-emerald-100 text-emerald-700' : (pct >= 75 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700');
+                let barClass = pct >= 85 ? 'bg-emerald-500' : (pct >= 75 ? 'bg-amber-500' : 'bg-brand-500');
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-700/50 transition';
+                tr.innerHTML = `
+                    <td class="p-3.5">
+                        <div class="font-bold">${item.subject}</div>
+                        <div class="text-[10px] text-gray-400 font-mono">${item.code}</div>
+                    </td>
+                    <td class="p-3.5 text-center font-semibold">${item.conducted}</td>
+                    <td class="p-3.5 text-center font-semibold text-emerald-600">${item.attended}</td>
+                    <td class="p-3.5 text-center font-semibold text-red-500">${item.missed}</td>
+                    <td class="p-3.5 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${badgeClass}">${pct}%</span>
+                    </td>
+                    <td class="p-3.5 w-48">
+                        <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                            <div class="${barClass} h-2 rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Subject Cards
+        function renderSubjectCards() {
+            const grid = document.getElementById('subjectCardsGrid');
+            grid.innerHTML = '';
+
+            SUBJECTS_DATA.forEach(sub => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start">
+                            <span class="bg-brand-50 text-brand-600 text-[10px] font-bold px-2.5 py-1 rounded-md font-mono">${sub.code}</span>
+                            <span class="text-xs font-semibold text-gray-400"><i class="fa-solid fa-award text-amber-500 mr-1"></i>${sub.credits} Credits</span>
+                        </div>
+                        <h3 class="font-extrabold text-base mt-2 text-gray-800 dark:text-white">${sub.name}</h3>
+                        <p class="text-xs text-brand-600 dark:text-brand-400 font-medium mt-1"><i class="fa-solid fa-user-tie mr-1"></i>${sub.faculty}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">${sub.desc}</p>
+                    </div>
+                    <div class="pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                        <span class="text-[11px] text-gray-400 font-medium"><i class="fa-regular fa-clock mr-1"></i>${sub.schedule}</span>
+                        <button onclick="openSubjectModal('${sub.code}')" class="text-xs text-brand-500 font-bold hover:underline">Details &rarr;</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Render Exam Schedule
+        function renderExamSchedule() {
+            const list = document.getElementById('examScheduleList');
+            list.innerHTML = '';
+
+            examScheduleData.forEach(exam => {
+                const item = document.createElement('div');
+                item.className = 'p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition';
+                item.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-500 flex flex-col items-center justify-center shrink-0 font-bold">
+                            <span class="text-xs uppercase">${exam.date.split(' ')[0]}</span>
+                            <span class="text-base leading-none">${exam.date.split(' ')[1].replace(',', '')}</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-mono text-xs font-bold text-brand-600">${exam.code}</span>
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded">${exam.type}</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-gray-800 dark:text-white mt-0.5">${exam.subject}</h4>
+                            <p class="text-xs text-gray-400">${exam.day} • ${exam.time} • Room: ${exam.room}</p>
+                        </div>
+                    </div>
+                    <button onclick="showToast('Exam schedule synced with calendar!', 'info')" class="bg-gray-100 dark:bg-gray-700 hover:bg-brand-500 hover:text-white text-gray-700 dark:text-gray-200 text-xs font-bold px-3 py-1.5 rounded-xl transition">
+                        <i class="fa-solid fa-calendar-plus mr-1"></i> Sync Calendar
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Render Announcements
+        function renderAnnouncements() {
+            const grid = document.getElementById('announcementsGrid');
+            grid.innerHTML = '';
+
+            announcementsData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-2xl border transition ${item.read ? 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700' : 'bg-brand-50/50 dark:bg-gray-800 border-brand-200 dark:border-brand-900/50'}`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${item.priority === 'High' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}">${item.priority} Priority</span>
+                            <span class="text-xs text-gray-400">${item.date}</span>
+                        </div>
+                        ${!item.read ? `<span class="w-2.5 h-2.5 bg-brand-500 rounded-full"></span>` : ''}
+                    </div>
+                    <h3 class="font-bold text-base mt-2 text-gray-800 dark:text-white">${item.title}</h3>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">${item.desc}</p>
+                    <div class="mt-3 flex justify-end">
+                        <button onclick="toggleAnnouncementRead(${item.id})" class="text-xs font-bold text-brand-500 hover:underline">
+                            ${item.read ? 'Mark Unread' : 'Mark as Read'}
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Render Assignments
+        function renderAssignmentsTable() {
+            const tbody = document.getElementById('assignmentsTableBody');
+            tbody.innerHTML = '';
+
+            assignmentsData.forEach(asg => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-700/50 transition';
+                tr.innerHTML = `
+                    <td class="p-3.5 font-bold text-gray-800 dark:text-white">${asg.title}</td>
+                    <td class="p-3.5 text-xs text-gray-500">${asg.subject}</td>
+                    <td class="p-3.5 text-xs font-semibold">${asg.due}</td>
+                    <td class="p-3.5 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${asg.status === 'Submitted' ? 'bg-emerald-100 text-emerald-700' : 'bg-brand-100 text-brand-700'}">
+                            ${asg.status}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-center font-mono font-semibold text-xs">${asg.grade}</td>
+                    <td class="p-3.5 text-right">
+                        ${asg.status === 'Pending' ? 
+                            `<button onclick="openAssignmentUploadModal(${asg.id})" class="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs px-3 py-1.5 rounded-xl shadow transition">Submit File</button>` : 
+                            `<span class="text-xs text-emerald-600 font-bold"><i class="fa-solid fa-circle-check mr-1"></i>Done</span>`}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Timetable Grid
+        function renderTimetable() {
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            const schedule = [
+                ['Artificial Intelligence', 'Data Structures', 'Python Lab', 'Python Lab', 'LUNCH', 'Database Systems'],
+                ['Python Programming', 'Database Systems', 'AI Lab', 'AI Lab', 'LUNCH', 'Library / Self Study'],
+                ['Data Structures', 'Artificial Intelligence', 'Operating Systems', 'Operating Systems', 'LUNCH', 'Sports / Activities'],
+                ['Database Systems', 'Python Programming', 'Algorithms', 'Algorithms', 'LUNCH', 'Computer Fundamentals'],
+                ['Computer Fundamentals', 'Data Structures', 'Minor Project', 'Minor Project', 'LUNCH', 'Faculty Mentoring']
+            ];
+
+            const tbody = document.getElementById('timetableBody');
+            tbody.innerHTML = '';
+
+            days.forEach((day, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-700/50 transition';
+                
+                let cells = `<td class="p-3 font-bold bg-gray-50 dark:bg-gray-800 text-brand-600 dark:text-brand-400 border border-gray-200 dark:border-gray-700">${day}</td>`;
+                
+                schedule[idx].forEach((sub, slotIdx) => {
+                    if (sub === 'LUNCH') {
+                        cells += `<td class="p-3 bg-gray-100 dark:bg-gray-700 font-bold text-gray-400 border border-gray-200 dark:border-gray-700">Break</td>`;
+                    } else {
+                        cells += `<td class="p-3 border border-gray-200 dark:border-gray-700 font-semibold">${sub}</td>`;
+                    }
+                });
+
+                tr.innerHTML = cells;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Study Materials
+        function renderStudyMaterials() {
+            const grid = document.getElementById('materialsGrid');
+            grid.innerHTML = '';
+
+            materialsData.forEach(mat => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex justify-between items-center';
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-500 flex items-center justify-center font-bold shrink-0">
+                            <i class="fa-solid fa-file-pdf text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-gray-800 dark:text-white line-clamp-1">${mat.name}</h4>
+                            <p class="text-[10px] text-gray-400">${mat.subject} • ${mat.size}</p>
+                        </div>
+                    </div>
+                    <button onclick="downloadSampleMaterial('${mat.name}')" class="p-2 text-brand-500 hover:bg-brand-50 rounded-lg transition">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* ==========================================================================
+           6. CHART DATA & INTERACTIVE VISUALIZATIONS
+           ========================================================================== */
+        function initCharts() {
+            // GPA Trend Line Chart
+            const ctxGpa = document.getElementById('gpaChart').getContext('2d');
+            gpaChartInstance = new Chart(ctxGpa, {
+                type: 'line',
+                data: {
+                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5'],
+                    datasets: [{
+                        label: 'GPA Score',
+                        data: [8.4, 8.6, 8.5, 8.9, 8.9],
+                        borderColor: '#E53935',
+                        backgroundColor: 'rgba(229, 57, 53, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#E53935'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { min: 6, max: 10, grid: { borderDash: [4, 4] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Attendance Bar Chart
+            const ctxAtt = document.getElementById('attendanceChart').getContext('2d');
+            attendanceChartInstance = new Chart(ctxAtt, {
+                type: 'bar',
+                data: {
+                    labels: ['AI', 'Python', 'DS', 'DBMS', 'CS Fund'],
+                    datasets: [{
+                        label: 'Attendance %',
+                        data: [90, 93, 81, 91, 80],
+                        backgroundColor: '#E53935',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { min: 0, max: 100, grid: { borderDash: [4, 4] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        /* ==========================================================================
+           7. INTERACTIVE MODALS & UTILITY ACTIONS
+           ========================================================================== */
+        function openModal(title, bodyHtml) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerHTML = bodyHtml;
+            document.getElementById('generalModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('generalModal').classList.add('hidden');
+        }
+
+        function openSubjectModal(code) {
+            const sub = SUBJECTS_DATA.find(s => s.code === code);
+            if (!sub) return;
+
+            const html = `
+                <div class="space-y-2">
+                    <p><strong>Faculty:</strong> ${sub.faculty}</p>
+                    <p><strong>Course Credits:</strong> ${sub.credits}</p>
+                    <p><strong>Weekly Hours:</strong> ${sub.schedule}</p>
+                    <p class="pt-2 border-t border-gray-100 dark:border-gray-700">${sub.desc}</p>
+                </div>
+            `;
+            openModal(`${sub.code}: ${sub.name}`, html);
+        }
+
+        function openAssignmentUploadModal(id) {
+            const asg = assignmentsData.find(a => a.id === id);
+            const html = `
+                <form onsubmit="submitAssignmentFile(event, ${id})" class="space-y-4">
+                    <p>Submitting for: <strong>${asg.title}</strong></p>
+                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-brand-500 transition cursor-pointer" onclick="document.getElementById('asgFileInput').click()">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-xs font-semibold">Click to select PDF or ZIP document</p>
+                        <input type="file" id="asgFileInput" required class="hidden" onchange="document.getElementById('fileNameDisp').innerText = this.files[0].name">
+                        <p id="fileNameDisp" class="text-xs text-brand-500 font-bold mt-2"></p>
+                    </div>
+                    <div class="bg-amber-50 text-amber-800 p-2 rounded text-[11px]">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Front-end simulation: Actual persistent cloud storage requires backend integration.
+                    </div>
+                    <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-2 rounded-xl transition">
+                        Confirm Submission
+                    </button>
+                </form>
+            `;
+            openModal('Assignment Upload', html);
+        }
+
+        function submitAssignmentFile(e, id) {
+            e.preventDefault();
+            const asg = assignmentsData.find(a => a.id === id);
+            if (asg) {
+                asg.status = 'Submitted';
+                asg.grade = 'Pending Eval';
+            }
+            renderAssignmentsTable();
+            closeModal();
+            showToast('Assignment submitted successfully!', 'success');
+        }
+
+        function toggleAnnouncementRead(id) {
+            const notice = announcementsData.find(a => a.id === id);
+            if (notice) {
+                notice.read = !notice.read;
+                renderAnnouncements();
+                updateNotificationBadges();
+            }
+        }
+
+        function markAllNotificationsRead() {
+            announcementsData.forEach(a => a.read = true);
+            renderAnnouncements();
+            updateNotificationBadges();
+            showToast('All announcements marked as read.', 'info');
+        }
+
+        function updateNotificationBadges() {
+            const unreadCount = announcementsData.filter(a => !a.read).length;
+            document.getElementById('unreadBadge').innerText = unreadCount;
+            document.getElementById('sidebarAnnouncementBadge').innerText = unreadCount;
+
+            const list = document.getElementById('notificationsList');
+            list.innerHTML = '';
+
+            announcementsData.forEach(notice => {
+                const div = document.createElement('div');
+                div.className = 'p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-xs';
+                div.onclick = () => { navigateTo('announcements'); };
+                div.innerHTML = `
+                    <div class="font-bold truncate text-gray-800 dark:text-white">${notice.title}</div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">${notice.date}</div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function toggleNotificationsMenu() {
+            document.getElementById('notificationsDropdown').classList.toggle('hidden');
+        }
+
+        function toggleProfileMenu() {
+            document.getElementById('profileDropdown').classList.toggle('hidden');
+        }
+
+        /* ==========================================================================
+           8. SEARCH & FILTERING UTILITIES
+           ========================================================================== */
+        function handleGlobalSearch(e) {
+            const query = e.target.value.toLowerCase().trim();
+            const dropdown = document.getElementById('searchResultsDropdown');
+
+            if (query.length < 2) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            const matchedSubjects = SUBJECTS_DATA.filter(s => s.name.toLowerCase().includes(query) || s.code.toLowerCase().includes(query));
+            const matchedExams = examScheduleData.filter(ex => ex.subject.toLowerCase().includes(query));
+
+            dropdown.innerHTML = '';
+
+            if (matchedSubjects.length === 0 && matchedExams.length === 0) {
+                dropdown.innerHTML = `<div class="p-3 text-xs text-gray-400 text-center">No matching records found.</div>`;
+            } else {
+                matchedSubjects.forEach(sub => {
+                    const item = document.createElement('div');
+                    item.className = 'p-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-xs flex justify-between items-center';
+                    item.onclick = () => { navigateTo('subjects'); openSubjectModal(sub.code); dropdown.classList.add('hidden'); };
+                    item.innerHTML = `<span><strong class="text-brand-500">${sub.code}</strong>: ${sub.name}</span> <span class="text-[10px] bg-gray-100 dark:bg-gray-600 px-1.5 py-0.5 rounded">Subject</span>`;
+                    dropdown.appendChild(item);
+                });
+            }
+
+            dropdown.classList.remove('hidden');
+        }
+
+        function filterAssignments(status) {
+            const rows = document.querySelectorAll('#assignmentsTableBody tr');
+            rows.forEach(row => {
+                if (status === 'all') {
+                    row.style.display = '';
+                } else if (status === 'pending') {
+                    row.style.display = row.innerText.includes('Pending') ? '' : 'none';
+                } else if (status === 'submitted') {
+                    row.style.display = row.innerText.includes('Submitted') ? '' : 'none';
+                }
+            });
+        }
+
+        function filterMaterials() {
+            const q = document.getElementById('materialsSearch').value.toLowerCase();
+            const cards = document.querySelectorAll('#materialsGrid > div');
+            cards.forEach(card => {
+                card.style.display = card.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+            });
+        }
+
+        /* ==========================================================================
+           9. COUNTDOWN TIMER & TOAST NOTIFICATIONS
+           ========================================================================== */
+        function setupCountdownTimer() {
+            // Target exam date: 15 days in future
+            const targetDate = new Date().getTime() + (15 * 24 * 60 * 60 * 1000);
+
+            setInterval(() => {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+                if (document.getElementById('countDays')) {
+                    document.getElementById('countDays').innerText = String(days).padStart(2, '0');
+                    document.getElementById('countHours').innerText = String(hours).padStart(2, '0');
+                    document.getElementById('countMins').innerText = String(minutes).padStart(2, '0');
+                }
+            }, 1000);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold text-white flex items-center space-x-2 transform transition-all duration-300 translate-y-2 opacity-0 ${type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-brand-600' : 'bg-gray-800')}`;
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info')}"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        /* ==========================================================================
+           10. EXPORT & DOWNLOAD SIMULATION HELPERS
+           ========================================================================== */
+        function downloadResultsCSV() {
+            let csv = 'Subject Code,Subject Name,Internal,External,Total,Grade,Status\n';
+            resultsData.forEach(r => {
+                csv += `${r.code},${r.name},${r.internal},${r.external},${r.total},${r.grade},${r.pass ? 'PASS' : 'FAIL'}\n`;
+            });
+            triggerDownload(csv, 'semester_results.csv', 'text/csv');
+        }
+
+        function downloadAttendanceReport() {
+            let txt = 'STUDENT ATTENDANCE REPORT\n=========================\n';
+            attendanceData.forEach(a => {
+                txt += `${a.code} - ${a.subject}: ${Math.round((a.attended/a.conducted)*100)}% (${a.attended}/${a.conducted} classes)\n`;
+            });
+            triggerDownload(txt, 'attendance_report.txt', 'text/plain');
+        }
+
+        function downloadExamScheduleCSV() {
+            let csv = 'Subject Code,Subject,Date,Day,Time,Room\n';
+            examScheduleData.forEach(e => {
+                csv += `${e.code},${e.subject},${e.date},${e.day},${e.time},${e.room}\n`;
+            });
+            triggerDownload(csv, 'exam_schedule.csv', 'text/csv');
+        }
+
+        function downloadSampleMaterial(fileName) {
+            triggerDownload(`Sample lecture study note content for: ${fileName}`, `${fileName.replace(/\s+/g, '_')}.txt`, 'text/plain');
+        }
+
+        function triggerDownload(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(`Downloaded: ${filename}`, 'success');
+        }
+
+        function savePreferences() {
+            showToast('Notification preferences updated.', 'info');
+        }
+
+        function handleChangePassword() {
+            const curr = document.getElementById('currPassInput').value;
+            const newP = document.getElementById('newPassInput').value;
+            if (!curr || !newP) {
+                showToast('Please fill out both password fields.', 'error');
+                return;
+            }
+            document.getElementById('currPassInput').value = '';
+            document.getElementById('newPassInput').value = '';
+            showToast('Password updated successfully!', 'success');
+        }
+    </script>
+</body>
+</html>
